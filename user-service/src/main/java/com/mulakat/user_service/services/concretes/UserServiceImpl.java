@@ -6,7 +6,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
-import com.mulakat.user_service.dtos.UserDTO;
+import com.mulakat.user_service.dtos.request.CreateUserRequest;
+import com.mulakat.user_service.dtos.response.UserResponse;
 import com.mulakat.user_service.entities.User;
 import com.mulakat.user_service.mappers.UserMapper;
 import com.mulakat.user_service.repositories.UserRepository;
@@ -21,55 +22,33 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
-        User user = userMapper.toEntity(userDTO);
+    public UserResponse createUser(CreateUserRequest request) {
+        User user = userMapper.toEntity(request);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
-        return userMapper.toDTO(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
-    public UserDTO getUserById(Long id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-        return userMapper.toDTO(user);
-    }
-
-    @Override
-    public List<UserDTO> getAllUsers() {
+    public List<UserResponse> getAllUsers() {
         return userRepository.findAll()
-            .stream()
-            .map(userMapper::toDTO)
-            .collect(Collectors.toList());
+                .stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public UserDTO updateUser(Long id, UserDTO userDTO) {
-        User existingUser = userRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-        existingUser.setName(userDTO.getName());
-        existingUser.setGender(userDTO.getGender());
-        existingUser.setEmail(userDTO.getEmail());
-        existingUser.setPassword(userDTO.getPassword());
-        existingUser.setAge(userDTO.getAge());
-        existingUser.setAddress(userDTO.getAddress());
-        existingUser.setPhoneNumber(userDTO.getPhoneNumber());
-        existingUser.setUpdatedAt(LocalDateTime.now());
-
-        User updatedUser = userRepository.save(existingUser);
-        return userMapper.toDTO(updatedUser);
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        return userMapper.toResponse(user);
     }
 
     @Override
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new RuntimeException("User not found with id: " + id);
-        }
         userRepository.deleteById(id);
     }
 
